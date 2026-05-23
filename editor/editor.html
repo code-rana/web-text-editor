@@ -25,6 +25,65 @@ $('#colorplate').hide();
 
 });
 
+// Enhanced functionality - hide all modals on start
+$('#bgcolorplate, #find-replace-modal').hide();
+
+// Background color functionality
+$('#bg-color').click(function() {
+    $('#bgcolorplate').show();
+});
+
+// Find & Replace functionality
+$('#find-replace').click(function() {
+    $('#find-replace-modal').show();
+    $('#find-input').focus();
+});
+
+// Modal close handlers
+$('.close-modal, .modal-btn.secondary').click(function() {
+    $('.modal').hide();
+});
+
+$('#color-ok, #color-cancel, #close-color').click(function() {
+    $('#colorplate').hide();
+});
+
+$('#bg-color-ok, #bg-color-cancel, #close-bg-color').click(function() {
+    $('#bgcolorplate').hide();
+});
+
+// File operations
+$('#new-doc').click(function() {
+    if (confirm('Are you sure you want to create a new document? Any unsaved changes will be lost.')) {
+        $('#pad').val('');
+        resetLineNumbers();
+        updateWordCount();
+    }
+});
+
+$('#open-file').click(function() {
+    $('#file-input').click();
+});
+
+$('#save-file').click(function() {
+    saveFile();
+});
+
+// File input handler
+$('#file-input').change(function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            $('#pad').val(e.target.result);
+            resetLineNumbers();
+            updateWordCount();
+            recalculateLineNumbers();
+        };
+        reader.readAsText(file);
+    }
+});
+
 /* helping script */
 $("textarea").keydown(function(e) {
     if(e.keyCode === 9) { // tab was pressed
@@ -59,39 +118,91 @@ $("textarea").keydown(function(e) {
 <div id="importpad">             <!-- parent division -->
 	<div id="editorarea">		<!-- editor div -->
 		<div id="padmenu">		<!-- menu div -->
-			<table>
-					<td><input type="button" value=" B " onClick="bold()"></td>    <!-- call bold() method to change font to bold -->
-					<td><input type="button" value="  I  " onClick="italics()"></td>  <!-- call italics() method to change font to italics -->
-					<td>
-						<select name="fontfamily" id="fontfamily" onChange="fontChange()">  <!-- call fontChange() method to change font -->
-							<option value="Arial">Arial</option>
-							<option value="Impact">Impact</option>
-							<option value="Helvetica">Helvetica</option>
-							<option value="Lucida Console">Lucida Console</option>		<!-- list any font here you wish to add -->
-							<option value="Regular">Regular</option>
-							<!--Add as many font-family as you like -->
-						</select>
-					</td>
-					<td>
-						<select name="fontsize" id="fontsize" onChange="fontSize()">   <!-- list the font size you wish to see in textarea -->
-							<option value="10px">10 px </option>
-							<option value="11px">11 px</option>
-							<option value="12px">12 px </option>
-							<option value="13px">13 px</option>
-							<option value="14px">14 px</option>
-							<option value="15px">15 px</option>
-							<option value="16px">16 px</option>
-							<option value="17px">17 px</option>
-							<option value="18px">18 px</option>
-							<option value="19px">19 px</option>
-							<option value="20px">20 px</option>
-							<!--Add as many font size you want -->
-						</select>
+			<div class="toolbar-section">
+				<!-- File Operations -->
+				<div class="toolbar-group">
+					<button class="toolbar-btn" id="new-doc" title="New Document (Ctrl+N)">📄</button>
+					<button class="toolbar-btn" id="open-file" title="Open File (Ctrl+O)">📁</button>
+					<button class="toolbar-btn" id="save-file" title="Save File (Ctrl+S)">💾</button>
+				</div>
+				
+				<div class="toolbar-separator"></div>
+				
+				<!-- Edit Operations -->
+				<div class="toolbar-group">
+					<button class="toolbar-btn" id="undo" title="Undo (Ctrl+Z)">↶</button>
+					<button class="toolbar-btn" id="redo" title="Redo (Ctrl+Y)">↷</button>
+				</div>
+				
+				<div class="toolbar-separator"></div>
+				
+				<!-- Text Formatting -->
+				<div class="toolbar-group">
+					<button class="toolbar-btn format-btn" id="bold-btn" onClick="toggleBold()" title="Bold (Ctrl+B)"><strong>B</strong></button>
+					<button class="toolbar-btn format-btn" id="italic-btn" onClick="toggleItalic()" title="Italic (Ctrl+I)"><em>I</em></button>
+					<button class="toolbar-btn format-btn" id="underline-btn" onClick="toggleUnderline()" title="Underline (Ctrl+U)"><u>U</u></button>
+					<button class="toolbar-btn format-btn" id="strike-btn" onClick="toggleStrike()" title="Strikethrough"><s>S</s></button>
+				</div>
+				
+				<div class="toolbar-separator"></div>
+				
+				<!-- Alignment -->
+				<div class="toolbar-group">
+					<button class="toolbar-btn" onClick="alignText('left')" title="Align Left">⬅</button>
+					<button class="toolbar-btn" onClick="alignText('center')" title="Align Center">↔</button>
+					<button class="toolbar-btn" onClick="alignText('right')" title="Align Right">➡</button>
+				</div>
+				
+				<div class="toolbar-separator"></div>
+				
+				<!-- Font Controls -->
+				<div class="toolbar-group">
+					<select name="fontfamily" id="fontfamily" onChange="fontChange()" class="toolbar-select" title="Font Family">
+						<option value="Arial, sans-serif">Arial</option>
+						<option value="'Times New Roman', serif">Times New Roman</option>
+						<option value="'Courier New', monospace">Courier New</option>
+						<option value="Helvetica, sans-serif">Helvetica</option>
+						<option value="'Lucida Console', monospace">Lucida Console</option>
+						<option value="Georgia, serif">Georgia</option>
+						<option value="Verdana, sans-serif">Verdana</option>
+						<option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+					</select>
 					
-					</td>
-					<td><input type="button" value="A" style="color:#ff0000;" id="colorchange"></td>
-
-			</table>
+					<select name="fontsize" id="fontsize" onChange="fontSize()" class="toolbar-select" title="Font Size">
+						<option value="8px">8px</option>
+						<option value="9px">9px</option>
+						<option value="10px">10px</option>
+						<option value="11px">11px</option>
+						<option value="12px">12px</option>
+						<option value="13px">13px</option>
+						<option value="14px" selected>14px</option>
+						<option value="15px">15px</option>
+						<option value="16px">16px</option>
+						<option value="18px">18px</option>
+						<option value="20px">20px</option>
+						<option value="22px">22px</option>
+						<option value="24px">24px</option>
+						<option value="28px">28px</option>
+						<option value="32px">32px</option>
+						<option value="36px">36px</option>
+					</select>
+				</div>
+				
+				<div class="toolbar-separator"></div>
+				
+				<!-- Color and Background -->
+				<div class="toolbar-group">
+					<button class="toolbar-btn" id="colorchange" title="Text Color">🎨</button>
+					<button class="toolbar-btn" id="bg-color" title="Background Color">🖍</button>
+				</div>
+				
+				<div class="toolbar-separator"></div>
+				
+				<!-- Search and Replace -->
+				<div class="toolbar-group">
+					<button class="toolbar-btn" id="find-replace" title="Find & Replace (Ctrl+F)">🔍</button>
+				</div>
+			</div>
 		</div>
 		<span style="padding-left:0px;position:absolute;">
 			<textarea name="padnumbers" id="padnumbers" disabled readonly>0</textarea>  <!-- numbers are shown as new line begins -->
@@ -109,35 +220,118 @@ $("textarea").keydown(function(e) {
 	
 	
 </div>
-<span id="colorplate">
-<table>
-	<tr><!--Set Different Buttons And Associate A color With it -->            <!--onClick change the color -->
-		<td><input type="button" class="boxbutton" style="background:#000000;" onClick=document.getElementById('pad').style.color="#000000";></td>
-		<td><input type="button" class="boxbutton" style="background:#7F7F7F;" onClick=document.getElementById('pad').style.color="#7F7F7F";></td>
-		<td><input type="button" class="boxbutton" style="background:#880015;" onClick=document.getElementById('pad').style.color="#880015";></td>
-		<td><input type="button" class="boxbutton" style="background:#ED1C24;" onClick=document.getElementById('pad').style.color="#ED1C24";></td>
-		<td><input type="button" class="boxbutton" style="background:#FFF200;" onClick=document.getElementById('pad').style.color="#FFF200";></td>
-		<td><input type="button" class="boxbutton" style="background:#22B14C;" onClick=document.getElementById('pad').style.color="#22B14C";></td>
-		<td><input type="button" class="boxbutton" style="background:#00A2E8;" onClick=document.getElementById('pad').style.color="#00A2E8";></td>
-		<td><input type="button" class="boxbutton" style="background:#3F48CC;" onClick=document.getElementById('pad').style.color="#3F48CC";></td>
-	</tr>
-	<tr><!--Set Different Buttons And Associate A color With it -->            <!--onClick change the color -->
-		<td><input type="button" class="boxbutton" style="background:#A349A4;" onClick=document.getElementById('pad').style.color="#A349A4";></td>
-		<td><input type="button" class="boxbutton" style="background:#B97A57;" onClick=document.getElementById('pad').style.color="#B97A57";></td>
-		<td><input type="button" class="boxbutton" style="background:#FFAEC9;" onClick=document.getElementById('pad').style.color="#FFAEC9";></td>
-		<td><input type="button" class="boxbutton" style="background:#FFC90E;" onClick=document.getElementById('pad').style.color="#FFC90E";></td>
-		<td><input type="button" class="boxbutton" style="background:#B5E61D;" onClick=document.getElementById('pad').style.color="#B5E61D";></td>
-		<td><input type="button" class="boxbutton" style="background:#99D9EA;" onClick=document.getElementById('pad').style.color="#99D9EA";></td>
-		<td><input type="button" class="boxbutton" style="background:#7092BE;" onClick=document.getElementById('pad').style.color="#7092BE";></td>
-		<td><input type="button" class="boxbutton" style="background:#dddddd;" onClick=document.getElementById('pad').style.color="#dddddd";></td>
-	</tr>
 
+<!-- Enhanced Color Picker Modal -->
+<div id="colorplate" class="modal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h3>Choose Text Color</h3>
+			<span class="close-modal" id="close-color">&times;</span>
+		</div>
+		<div class="color-grid">
+			<div class="color-row">
+				<button class="color-btn" style="background:#000000;" onClick="setTextColor('#000000')" title="Black"></button>
+				<button class="color-btn" style="background:#7F7F7F;" onClick="setTextColor('#7F7F7F')" title="Gray"></button>
+				<button class="color-btn" style="background:#880015;" onClick="setTextColor('#880015')" title="Dark Red"></button>
+				<button class="color-btn" style="background:#ED1C24;" onClick="setTextColor('#ED1C24')" title="Red"></button>
+				<button class="color-btn" style="background:#FFF200;" onClick="setTextColor('#FFF200')" title="Yellow"></button>
+				<button class="color-btn" style="background:#22B14C;" onClick="setTextColor('#22B14C')" title="Green"></button>
+				<button class="color-btn" style="background:#00A2E8;" onClick="setTextColor('#00A2E8')" title="Blue"></button>
+				<button class="color-btn" style="background:#3F48CC;" onClick="setTextColor('#3F48CC')" title="Dark Blue"></button>
+			</div>
+			<div class="color-row">
+				<button class="color-btn" style="background:#A349A4;" onClick="setTextColor('#A349A4')" title="Purple"></button>
+				<button class="color-btn" style="background:#B97A57;" onClick="setTextColor('#B97A57')" title="Brown"></button>
+				<button class="color-btn" style="background:#FFAEC9;" onClick="setTextColor('#FFAEC9')" title="Pink"></button>
+				<button class="color-btn" style="background:#FFC90E;" onClick="setTextColor('#FFC90E')" title="Orange"></button>
+				<button class="color-btn" style="background:#B5E61D;" onClick="setTextColor('#B5E61D')" title="Lime"></button>
+				<button class="color-btn" style="background:#99D9EA;" onClick="setTextColor('#99D9EA')" title="Light Blue"></button>
+				<button class="color-btn" style="background:#7092BE;" onClick="setTextColor('#7092BE')" title="Steel Blue"></button>
+				<button class="color-btn" style="background:#FFFFFF; border: 1px solid #ccc;" onClick="setTextColor('#FFFFFF')" title="White"></button>
+			</div>
+			<div class="color-row">
+				<button class="color-btn" style="background:#FF6B6B;" onClick="setTextColor('#FF6B6B')" title="Light Red"></button>
+				<button class="color-btn" style="background:#4ECDC4;" onClick="setTextColor('#4ECDC4')" title="Teal"></button>
+				<button class="color-btn" style="background:#45B7D1;" onClick="setTextColor('#45B7D1')" title="Sky Blue"></button>
+				<button class="color-btn" style="background:#96CEB4;" onClick="setTextColor('#96CEB4')" title="Mint"></button>
+				<button class="color-btn" style="background:#FFEAA7;" onClick="setTextColor('#FFEAA7')" title="Light Yellow"></button>
+				<button class="color-btn" style="background:#DDA0DD;" onClick="setTextColor('#DDA0DD')" title="Plum"></button>
+				<button class="color-btn" style="background:#98D8C8;" onClick="setTextColor('#98D8C8')" title="Light Green"></button>
+				<button class="color-btn" style="background:#F7DC6F;" onClick="setTextColor('#F7DC6F')" title="Gold"></button>
+			</div>
+		</div>
+		<div class="custom-color">
+			<label for="custom-color-input">Custom Color: </label>
+			<input type="color" id="custom-color-input" onchange="setTextColor(this.value)">
+		</div>
+		<div class="modal-footer">
+			<button class="modal-btn primary" id="color-ok">Apply</button>
+			<button class="modal-btn secondary" id="color-cancel">Cancel</button>
+		</div>
+	</div>
+</div>
 
-</table>	
-	
-		&nbsp; &nbsp; &nbsp; <input type="button" value=" Ok " style="background:#00a2e8;color:#ffffff;border-style:none;height:30px;width:60px;" id="ok">
-		<input type="button" value="Quit"  style="background:#ed1c24;color:#ffffff;border-style:none;height:30px;width:60px;"  onClick=document.getElementById('pad').style.color="#000000"; id="quit">
-	
-</span>
+<!-- Background Color Picker Modal -->
+<div id="bgcolorplate" class="modal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h3>Choose Background Color</h3>
+			<span class="close-modal" id="close-bg-color">&times;</span>
+		</div>
+		<div class="color-grid">
+			<div class="color-row">
+				<button class="color-btn" style="background:#FFFFFF; border: 1px solid #ccc;" onClick="setBgColor('#FFFFFF')" title="White"></button>
+				<button class="color-btn" style="background:#F8F9FA;" onClick="setBgColor('#F8F9FA')" title="Light Gray"></button>
+				<button class="color-btn" style="background:#E9ECEF;" onClick="setBgColor('#E9ECEF')" title="Gray"></button>
+				<button class="color-btn" style="background:#DEE2E6;" onClick="setBgColor('#DEE2E6')" title="Medium Gray"></button>
+				<button class="color-btn" style="background:#000000;" onClick="setBgColor('#000000')" title="Black"></button>
+				<button class="color-btn" style="background:#FFF3CD;" onClick="setBgColor('#FFF3CD')" title="Light Yellow"></button>
+				<button class="color-btn" style="background:#D4EDDA;" onClick="setBgColor('#D4EDDA')" title="Light Green"></button>
+				<button class="color-btn" style="background:#CCE5FF;" onClick="setBgColor('#CCE5FF')" title="Light Blue"></button>
+			</div>
+		</div>
+		<div class="custom-color">
+			<label for="custom-bg-color-input">Custom Background: </label>
+			<input type="color" id="custom-bg-color-input" onchange="setBgColor(this.value)">
+		</div>
+		<div class="modal-footer">
+			<button class="modal-btn primary" id="bg-color-ok">Apply</button>
+			<button class="modal-btn secondary" id="bg-color-cancel">Cancel</button>
+		</div>
+	</div>
+</div>
+
+<!-- Find & Replace Modal -->
+<div id="find-replace-modal" class="modal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h3>Find & Replace</h3>
+			<span class="close-modal" id="close-find-replace">&times;</span>
+		</div>
+		<div class="find-replace-content">
+			<div class="input-group">
+				<label for="find-input">Find:</label>
+				<input type="text" id="find-input" placeholder="Enter text to find...">
+				<button class="find-btn" id="find-next">Find Next</button>
+				<button class="find-btn" id="find-prev">Find Previous</button>
+			</div>
+			<div class="input-group">
+				<label for="replace-input">Replace:</label>
+				<input type="text" id="replace-input" placeholder="Enter replacement text...">
+				<button class="find-btn" id="replace-one">Replace</button>
+				<button class="find-btn" id="replace-all">Replace All</button>
+			</div>
+			<div class="find-options">
+				<label><input type="checkbox" id="match-case"> Match Case</label>
+				<label><input type="checkbox" id="whole-word"> Whole Word</label>
+			</div>
+			<div id="find-results" class="find-results"></div>
+		</div>
+	</div>
+</div>
+
+<!-- File Input for Opening Files -->
+<input type="file" id="file-input" accept=".txt,.md,.js,.html,.css,.json" style="display: none;">
+
 </body>
 </html>
