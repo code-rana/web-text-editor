@@ -1,4 +1,73 @@
-localStorage.padnumbers=0;  // set a local variable
+// Initialize with error handling
+try {
+    if (!localStorage.padnumbers) {
+        localStorage.padnumbers = 0;
+    }
+} catch (error) {
+    console.error('LocalStorage access error:', error);
+    // Fallback to session variable
+    window.padnumbers = 0;
+}
+
+// Add global error handler
+window.addEventListener('error', function(e) {
+    console.error('Global error:', e.error);
+    // Prevent the error from crashing the app
+    return true;
+});
+
+// Add unhandled rejection handler
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled promise rejection:', e.reason);
+    e.preventDefault();
+});
+
+// Auto-save functionality
+let autoSaveTimer = null;
+function autoSave() {
+    try {
+        const content = document.getElementById('pad').value;
+        localStorage.setItem('autosave_content', content);
+        localStorage.setItem('autosave_timestamp', Date.now());
+    } catch (error) {
+        console.error('Auto-save failed:', error);
+    }
+}
+
+function startAutoSave() {
+    if (autoSaveTimer) clearInterval(autoSaveTimer);
+    autoSaveTimer = setInterval(autoSave, 30000); // Auto-save every 30 seconds
+}
+
+// Crash recovery
+function recoverContent() {
+    try {
+        const savedContent = localStorage.getItem('autosave_content');
+        const savedTime = localStorage.getItem('autosave_timestamp');
+        
+        if (savedContent && savedTime) {
+            const timeDiff = Date.now() - parseInt(savedTime);
+            if (timeDiff < 24 * 60 * 60 * 1000) { // Less than 24 hours old
+                if (confirm('Found auto-saved content from ' + new Date(parseInt(savedTime)).toLocaleString() + '. Would you like to recover it?')) {
+                    document.getElementById('pad').value = savedContent;
+                    updateWordCount();
+                    recalculateLineNumbers();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Content recovery failed:', error);
+    }
+}
+
+// Initialize auto-save when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    recoverContent();
+    startAutoSave();
+});
+// Throttle function to prevent excessive calls
+let throttleTimer = null;
+
 function line(event)
 {
 	if(event.keyCode==13)		// check if key pressed is ENTER
@@ -20,32 +89,14 @@ function line(event)
 				document.getElementById('padnumbers').scrollTop=localStorage.padnumbers+1;
 	}
 
-	var words=document.getElementById('pad').value;
-	var chars=0;
-	var space=0;
-	var w=0;
-	for(var i=0;i<words.length;i++)
-	{
-		if(words.charAt(i)==' ')
-		{
-			if(words.charAt(i-1)!=' ')
-			space=space+1;	
-		}
-		w=space+1;
-
-		if(words.charAt(i)==' '||words.charAt(i)=='\t'||words.charAt(i)=='\n')
-		{
-		
-		}
-		
-		else
-		{
-			chars=chars+1;
-		}
+	// Throttle word/character counting to prevent performance issues
+	if (throttleTimer) {
+		clearTimeout(throttleTimer);
 	}
-	document.getElementById('chars').value=chars;
-	document.getElementById('words').value=w;
 	
+	throttleTimer = setTimeout(function() {
+		updateWordCount();
+	}, 100); // Wait 100ms before updating
 }
 function fontChange()
 {
@@ -64,6 +115,9 @@ let formatState = {
     underline: false,
     strikethrough: false
 };
+
+// Search state
+let currentSearchIndex = -1;
 
 function toggleBold() {
     formatState.bold = !formatState.bold;
@@ -289,7 +343,9 @@ function findText(forward = true) {
     let searchFor = matchCase ? searchTerm : searchTerm.toLowerCase();
     
     if (wholeWord) {
-        searchFor = '\\b' + searchFor + '\\b';
+        searchFor = '\\b' + searchFor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b';
+    } else {
+        searchFor = searchFor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
     
     const regex = new RegExp(searchFor, 'g' + (matchCase ? '' : 'i'));
@@ -330,7 +386,9 @@ function replaceText(replaceAll = false) {
     let searchFor = searchTerm;
     
     if (wholeWord) {
-        searchFor = '\\b' + searchFor + '\\b';
+        searchFor = '\\b' + searchFor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b';
+    } else {
+        searchFor = searchFor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
     
     const regex = new RegExp(searchFor, flags);
@@ -370,7 +428,9 @@ function highlightAllMatches() {
     let searchFor = searchTerm;
     
     if (wholeWord) {
-        searchFor = '\\b' + searchFor + '\\b';
+        searchFor = '\\b' + searchFor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b';
+    } else {
+        searchFor = searchFor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
     
     const regex = new RegExp(searchFor, flags);

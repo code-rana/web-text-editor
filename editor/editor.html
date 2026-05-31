@@ -1,8 +1,12 @@
 
 <!DOCTYPE html>
+<html>
+<head>
+<title>Web Text Editor</title>
 <link rel="stylesheet" type="text/css" href="css/pad.css">  <!-- import style css to this page -->
-<script src="scripts/pad.js"></script>					<!-- import pad.js for text based operations-->
 <script src="scripts/jquery.js"></script>				<!-- import the library jQuery visit jQuery.com for any documenttation related to it-->
+<script src="scripts/pad.js"></script>					<!-- import pad.js for text based operations-->
+</head>
 <script>
 $(document).ready(function() {
 $('#colorplate').hide();
@@ -26,62 +30,106 @@ $('#colorplate').hide();
 });
 
 // Enhanced functionality - hide all modals on start
-$('#bgcolorplate, #find-replace-modal').hide();
+$(document).ready(function() {
+    $('#bgcolorplate, #find-replace-modal').hide();
 
-// Background color functionality
-$('#bg-color').click(function() {
-    $('#bgcolorplate').show();
-});
+    // Background color functionality
+    $('#bg-color').click(function() {
+        $('#bgcolorplate').show();
+    });
 
-// Find & Replace functionality
-$('#find-replace').click(function() {
-    $('#find-replace-modal').show();
-    $('#find-input').focus();
-});
+    // Find & Replace functionality
+    $('#find-replace').click(function() {
+        $('#find-replace-modal').show();
+        $('#find-input').focus();
+    });
 
-// Modal close handlers
-$('.close-modal, .modal-btn.secondary').click(function() {
-    $('.modal').hide();
-});
+    // Modal close handlers
+    $('.close-modal, .modal-btn.secondary').click(function() {
+        $('.modal').hide();
+    });
 
-$('#color-ok, #color-cancel, #close-color').click(function() {
-    $('#colorplate').hide();
-});
+    $('#color-ok, #color-cancel, #close-color').click(function() {
+        $('#colorplate').hide();
+    });
 
-$('#bg-color-ok, #bg-color-cancel, #close-bg-color').click(function() {
-    $('#bgcolorplate').hide();
-});
+    $('#bg-color-ok, #bg-color-cancel, #close-bg-color').click(function() {
+        $('#bgcolorplate').hide();
+    });
 
-// File operations
-$('#new-doc').click(function() {
-    if (confirm('Are you sure you want to create a new document? Any unsaved changes will be lost.')) {
-        $('#pad').val('');
-        resetLineNumbers();
+    // File operations
+    $('#new-doc').click(function() {
+        if (confirm('Are you sure you want to create a new document? Any unsaved changes will be lost.')) {
+            $('#pad').val('');
+            if (typeof resetLineNumbers === 'function') resetLineNumbers();
+            if (typeof updateWordCount === 'function') updateWordCount();
+        }
+    });
+
+    $('#open-file').click(function() {
+        $('#file-input').click();
+    });
+
+    $('#save-file').click(function() {
+        if (typeof saveFile === 'function') saveFile();
+    });
+
+    // Undo/Redo handlers
+    $('#undo').click(function() {
+        if (typeof undo === 'function') undo();
+    });
+
+    $('#redo').click(function() {
+        if (typeof redo === 'function') redo();
+    });
+
+    // File input handler
+    $('#file-input').change(function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#pad').val(e.target.result);
+                if (typeof resetLineNumbers === 'function') resetLineNumbers();
+                if (typeof updateWordCount === 'function') updateWordCount();
+                if (typeof recalculateLineNumbers === 'function') recalculateLineNumbers();
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // Safe event handling for pad textarea
+    $('#pad').on('keydown', function(event) {
+        try {
+            line(event);
+        } catch (error) {
+            console.error('Error in line function:', error);
+        }
+    });
+
+    // Prevent infinite focus loops
+    let focusLockout = false;
+    $('#pad').on('blur', function() {
+        if (!focusLockout) {
+            focusLockout = true;
+            setTimeout(() => {
+                if (document.activeElement !== this) {
+                    this.focus();
+                }
+                focusLockout = false;
+            }, 50);
+        }
+    });
+
+    // Initialize word count on page load
+    if (typeof updateWordCount === 'function') {
         updateWordCount();
     }
-});
 
-$('#open-file').click(function() {
-    $('#file-input').click();
-});
-
-$('#save-file').click(function() {
-    saveFile();
-});
-
-// File input handler
-$('#file-input').change(function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            $('#pad').val(e.target.result);
-            resetLineNumbers();
-            updateWordCount();
-            recalculateLineNumbers();
-        };
-        reader.readAsText(file);
-    }
+    // Safe initial focus
+    setTimeout(function() {
+        document.getElementById('pad').focus();
+    }, 100);
 });
 
 /* helping script */
@@ -114,7 +162,10 @@ $("textarea").keydown(function(e) {
 
 
 
-<body onload="document.getElementById('pad').focus();">
+<body>
+<!-- Hidden file input for open functionality -->
+<input type="file" id="file-input" accept=".txt,.text,text/*" style="display: none;">
+
 <div id="importpad">             <!-- parent division -->
 	<div id="editorarea">		<!-- editor div -->
 		<div id="padmenu">		<!-- menu div -->
@@ -209,7 +260,7 @@ $("textarea").keydown(function(e) {
 		</span>
 		<span style="padding-left:36px;position:absolute;">
 
-			<textarea id="pad" name="pad" onkeydown="line(event)" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" onblur="document.getElementById('pad').focus()" onChange="document.getElementById('pad').focus();"></textarea>
+			<textarea id="pad" name="pad" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
 			<!-- the above textarea where text-edit will be done -->
 		</span>
 		<!--Division Area where total words and characters calculated are shown -->
