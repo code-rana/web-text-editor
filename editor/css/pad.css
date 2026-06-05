@@ -1,49 +1,164 @@
+body {
+margin: 0;
+padding: 0;
+font-family: Arial, sans-serif;
+background: #f5f5f5;
+overflow: hidden;
+}
+
 #importpad
 {                                         /* this is the parent container of the text-editor */
-margin-left:200px;
-position:absolute;
-margin-top:50px;
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+width: 90vw;
+max-width: 1400px;
+min-width: 800px;
+height: 85vh;
+max-height: 900px;
+min-height: 600px;
+display: flex;
+flex-direction: column;
 }
 #pad
 {
 resize:none;                                /* this is the textarea where text will be typed*/
-width:695px;
-height:400px;
+width: 100%;
+height: 100%;
 border-style:solid;
 border-color:#c9c9c9;
 border-left-style:dotted;
+box-sizing: border-box;
+font-size: 16px;
+font-family: 'Courier New', monospace;
+line-height: 1.5;
+outline: none;
 }
 #padnumbers
 {
                                       /* this is side text counting numbers as new line begins */
-height:400px;
-width:37px;
+height: 100%;
+width: 100%;
 resize:none;
 overflow:hidden;
+box-sizing: border-box;
+font-size: 16px;
+font-family: 'Courier New', monospace;
+line-height: 1.5;
+text-align: right;
+padding-right: 5px;
+background: #f8f8f8;
+border: 1px solid #c9c9c9;
+border-right: none;
+color: #666;
 }
 #padmenu
 {
-height:50px;                     /* all buttons and menus are present in this division */
-width:733px;
-background:#f0f0f0;
+height:60px;                     /* all buttons and menus are present in this division */
+width: 100%;
+background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 border-style:solid;
 border-color:#c9c9c9;
 border-width:2px;
 border-bottom-style:none;
 border-top-right-radius:10px;
 border-top-left-radius:10px;
+padding: 8px 12px;
+box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+box-sizing: border-box;
+flex-shrink: 0;
 }
-#padmenu td 
-{
-padding-top:5px;
+
+.toolbar-section {
+display: flex;
+align-items: center;
+gap: 4px;
+height: 100%;
+overflow-x: auto;
+}
+
+.toolbar-group {
+display: flex;
+align-items: center;
+gap: 2px;
+}
+
+.toolbar-separator {
+width: 1px;
+height: 24px;
+background: #ccc;
+margin: 0 8px;
+}
+
+.toolbar-btn {
+background: #ffffff;
+border: 1px solid #d1d5db;
+border-radius: 6px;
+padding: 6px 10px;
+font-size: 14px;
+cursor: pointer;
+transition: all 0.2s ease;
+display: flex;
+align-items: center;
+justify-content: center;
+min-width: 32px;
+height: 32px;
+}
+
+.toolbar-btn:hover {
+background: #f3f4f6;
+border-color: #9ca3af;
+box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+transform: translateY(-1px);
+}
+
+.toolbar-btn:active, .toolbar-btn.active {
+background: #e5e7eb;
+transform: translateY(0);
+}
+
+.format-btn.active {
+background: #3b82f6;
+color: white;
+border-color: #2563eb;
+}
+
+.toolbar-select {
+background: #ffffff;
+border: 1px solid #d1d5db;
+border-radius: 6px;
+padding: 6px 8px;
+font-size: 12px;
+cursor: pointer;
+transition: all 0.2s ease;
+min-width: 80px;
+height: 32px;
+}
+
+.toolbar-select:hover {
+border-color: #9ca3af;
+}
+
+.toolbar-select:focus {
+outline: none;
+border-color: #3b82f6;
+box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 #bottom
 {
-margin-top:404px;                                     /* this is the bottom div where total words and chars are shown */
-width:737px;
+width: 100%;
 border-bottom-right-radius:10px;
-position:absolute;
+border-bottom-left-radius:10px;
+position: relative;
 color:#444444;
+margin-top: auto;
+box-sizing: border-box;
+padding: 8px 12px;
+flex-shrink: 0;
+background: #f0f0f0;
+border: 1px solid #c9c9c9;
+border-top: none;
 }
 #bottom input										/* this styling causes the text box border and background  to Camoflauge */ 
 {                                     
@@ -54,18 +169,18 @@ color:#222222;
 }
 #colorplate												/* show the box that have different colors */
 {
-	margin-top:100px;
-	margin-left:350px;
-	position:absolute;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 	background:#ffffff;
 
-	height:140px;
+	border-radius: 8px;
 	border-style:solid;
 	border-width:1px;
 	border-color:#cccccc;
-	width:300px;
-	box-shadow:2px 4px 2px #ccc;
-	position:absolute;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+	z-index: 1001;
 }
 #colorplate table
 {
@@ -81,4 +196,157 @@ border-width:1px;
 .boxbutton:hover						/* on mouse over give them hover effect */
 {
 border-color:#000000;
+}
+/* Enhanced Toolbar and Modal Styles */
+.modal {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.5);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+}
+
+.modal-content {
+background: white;
+border-radius: 8px;
+box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+max-width: 500px;
+width: 90%;
+max-height: 80%;
+overflow-y: auto;
+}
+
+.modal-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 16px 20px;
+border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+margin: 0;
+font-size: 18px;
+font-weight: 600;
+color: #1f2937;
+}
+
+.close-modal {
+font-size: 24px;
+cursor: pointer;
+color: #6b7280;
+line-height: 1;
+}
+
+.close-modal:hover {
+color: #374151;
+}
+
+.color-grid {
+padding: 20px;
+}
+
+.color-row {
+display: flex;
+gap: 8px;
+margin-bottom: 8px;
+justify-content: center;
+}
+
+.color-btn {
+width: 32px;
+height: 32px;
+border: 2px solid #e5e7eb;
+border-radius: 6px;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.color-btn:hover {
+border-color: #374151;
+transform: scale(1.1);
+}
+
+.custom-color {
+padding: 0 20px 20px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.custom-color input[type="color"] {
+width: 50px;
+height: 32px;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+}
+
+.modal-footer {
+padding: 16px 20px;
+border-top: 1px solid #e5e7eb;
+display: flex;
+gap: 8px;
+justify-content: flex-end;
+}
+
+.modal-btn {
+padding: 8px 16px;
+border: none;
+border-radius: 6px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.modal-btn.primary {
+background: #3b82f6;
+color: white;
+}
+
+.modal-btn.secondary {
+background: #f3f4f6;
+color: #374151;
+}
+
+#editorarea {
+display: flex;
+flex-direction: column;
+height: 100%;
+position: relative;
+}
+
+.textarea-container {
+display: flex;
+flex: 1;
+position: relative;
+min-height: 0;
+}
+
+.line-numbers-container {
+width: 40px;
+position: relative;
+flex-shrink: 0;
+}
+
+.editor-container {
+flex: 1;
+position: relative;
+min-width: 0;
+}
+
+#bgcolorplate {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: #ffffff;
+border-radius: 8px;
+box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+z-index: 1001;
 }
