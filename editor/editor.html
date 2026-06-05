@@ -255,14 +255,15 @@ $("textarea").keydown(function(e) {
 				</div>
 			</div>
 		</div>
-		<span style="padding-left:0px;position:absolute;">
-			<textarea name="padnumbers" id="padnumbers" disabled readonly>0</textarea>  <!-- numbers are shown as new line begins -->
-		</span>
-		<span style="padding-left:36px;position:absolute;">
-
-			<textarea id="pad" name="pad" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
-			<!-- the above textarea where text-edit will be done -->
-		</span>
+		<div class="textarea-container">
+			<div class="line-numbers-container">
+				<textarea name="padnumbers" id="padnumbers" disabled readonly>0</textarea>  <!-- numbers are shown as new line begins -->
+			</div>
+			<div class="editor-container">
+				<textarea id="pad" name="pad" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+				<!-- the above textarea where text-edit will be done -->
+			</div>
+		</div>
 		<!--Division Area where total words and characters calculated are shown -->
 		<div id="bottom" style="background:#f0f0f0;"> Total Words : <input type="text" id="words" name="words" disabled>
 		Total Characters : <input type="text" id="chars" name="chars" disabled></div>
